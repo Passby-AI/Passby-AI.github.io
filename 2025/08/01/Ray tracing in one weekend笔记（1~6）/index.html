@@ -27,7 +27,7 @@
 <meta property="og:description" content="2. Output an Image为什么使用 255.999 而不是 255？这是一个非常经典的计算机图形学技巧，主要目的是为了处理浮点数精度问题并确保颜色范围的正确映射。  目标： 代码的目的是将一个范围在 [0.0, 1.0] 之间的浮点数（如变量 r, g, b）映射到范围在 [0, 255] 之间的整数，用于表示PPM图像格式中的颜色分量。  问题： 计算机在表示浮点数时存在精度限制。一">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-08-01T08:13:00.000Z">
-<meta property="article:modified_time" content="2025-09-02T06:52:46.358Z">
+<meta property="article:modified_time" content="2025-09-02T07:10:41.832Z">
 <meta property="article:author" content="AKIRA">
 <meta property="article:tag" content="c++">
 <meta property="article:tag" content="面向对象">
@@ -240,7 +240,7 @@
         
         
         
-          42 分钟
+          41 分钟
         
       </span>
     
@@ -311,9 +311,11 @@
 </ul>
 <p><strong>总结：使用 <code>255.999</code> 是一个健壮的编程技巧，可以确保 <code>[0.0, 1.0]</code> 的浮点数范围被完整且正确地映射到 <code>[0, 255]</code> 的整数范围，避免了因浮点数不精确而导致的最大值丢失问题。</strong></p>
 <hr>
-<h3 id="为什么-r-double-i-image-width-1-？"><a href="#为什么-r-double-i-image-width-1-？" class="headerlink" title="为什么 r = double(i) / (image_width - 1);？"></a>为什么 <code>r = double(i) / (image_width - 1);</code>？</h3><p>您的理解是完全正确的！这行代码的<strong>目的就是在图像上创建一个平滑的颜色渐变，让颜色的强度与像素的位置相关联</strong>。</p>
-<p>我们来分解一下这行代码：</p>
-<ul>
+<h3 id="为什么-r-double-i-image-width-1-？"><a href="#为什么-r-double-i-image-width-1-？" class="headerlink" title="为什么 r = double(i) / (image_width - 1);？"></a>为什么 <code>r = double(i) / (image_width - 1);</code>？</h3><ul>
+<li><p>这行代码的<strong>目的就是在图像上创建一个平滑的颜色渐变，让颜色的强度与像素的位置相关联</strong>。</p>
+</li>
+<li><p>来分解一下这行代码：</p>
+</li>
 <li><p><code>for (int i = 0; i &lt; image_width; i++)</code>: <code>i</code> 是像素的水平位置（列索引），从最左边的 <code>0</code> 变化到最右边的 <code>image_width - 1</code>。</p>
 </li>
 <li><p><code>double(i)</code>: 将整数索引 <code>i</code> 转换为浮点数，以便进行精确的除法运算。</p>
@@ -390,7 +392,7 @@
 </ul>
 <hr>
 <h3 id="组织方法"><a href="#组织方法" class="headerlink" title="组织方法"></a>组织方法</h3><ul>
-<li>在[[从实现一个Vector3f向量类，深入了解运算符重载]] 中也实现了一个三维向量类；但是在文件的组织上选择了不同的方案；<br>首先，我们总结一下两种做法的核心区别：</li>
+<li>在<a href=".%5C%E4%BB%8E%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AAVector3f%E5%90%91%E9%87%8F%E7%B1%BB%EF%BC%8C%E6%B7%B1%E5%85%A5%E4%BA%86%E8%A7%A3%E8%BF%90%E7%AE%97%E7%AC%A6%E9%87%8D%E8%BD%BD.md">从实现一个Vector3f向量类，深入了解运算符重载</a> 中也实现了一个三维向量类；但是在文件的组织上选择了不同的方案；<br>首先，我们总结一下两种做法的核心区别：</li>
 </ul>
 <ol>
 <li><p><strong>Vector3f (Separate Files)</strong>:</p>
@@ -441,8 +443,9 @@
 <li><p><strong>隐藏实现</strong>: 你不希望类的使用者知道或依赖于你的内部实现。这种分离有助于实现信息隐藏（Information Hiding）。</p>
 </li>
 </ul>
-<h3 id="关于运算符重载和友元函数"><a href="#关于运算符重载和友元函数" class="headerlink" title="关于运算符重载和友元函数"></a><strong>关于运算符重载和友元函数</strong></h3><p>你提到了“运算符重载和友元函数”。我们来对比一下：</p>
-<ul>
+<h3 id="关于运算符重载和友元函数"><a href="#关于运算符重载和友元函数" class="headerlink" title="关于运算符重载和友元函数"></a><strong>关于运算符重载和友元函数</strong></h3><ul>
+<li><p>我们来对比一下：</p>
+</li>
 <li><p><strong>Vector3f实现</strong>: 在 <code>Vector3f</code> 中，像 <code>operator+</code> 这样的二元运算符被实现为<strong>成员函数</strong>。</p>
 </li>
 <li><p><strong><code>vec3.h</code> 的实现</strong>: <code>operator+</code> 被实现为一个<strong>非成员的内联函数</strong> <code>inline vec3 operator+(const vec3 &amp;u, const vec3 &amp;v)</code>。</p>
@@ -493,7 +496,7 @@
 </ol>
 <ul>
 <li>这个过程被称为“函数调用开销 (function call overhead)”。对于大多数函数来说，这点开销微不足道。但如果一个函数非常小（比如只有一两行代码）且被极其频繁地调用（例如，在一个百万次循环中），这个开销就会累积起来，影响程序的整体性能。</li>
-<li><code>inline</code> 就是为了解决这个问题。当你将一个函数声明为 <code>inline</code> 时，你其实是在建议编译器：<strong>“请不要生成函数调用指令，而是直接把这个函数的代码‘复制粘贴’到调用它的地方吧。”</strong></li>
+<li><code>inline</code> 就是为了解决这个问题。将一个函数声明为 <code>inline</code> 时，其实是在建议编译器：<strong>“请不要生成函数调用指令，而是直接把这个函数的代码‘复制粘贴’到调用它的地方吧。”</strong></li>
 <li>这个过程被称为**内联展开 (inlining)**。</li>
 </ul>
 <p><strong>代码示例:</strong></p>
