@@ -1,0 +1,939 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#5b060b">
+  <meta name="author" content="AKIRA">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="2. Output an Image为什么使用 255.999 而不是 255？这是一个非常经典的计算机图形学技巧，主要目的是为了处理浮点数精度问题并确保颜色范围的正确映射。  目标： 代码的目的是将一个范围在 [0.0, 1.0] 之间的浮点数（如变量 r, g, b）映射到范围在 [0, 255] 之间的整数，用于表示PPM图像格式中的颜色分量。  问题： 计算机在表示浮点数时存在精度限制。一">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ray tracing in one weekend笔记(1~6)">
+<meta property="og:url" content="https://username.github.io/2025/08/01/Ray%20tracing%20in%20one%20weekend%E7%AC%94%E8%AE%B0%EF%BC%881~6%EF%BC%89/index.html">
+<meta property="og:site_name" content="AKIRA&#39;s blog">
+<meta property="og:description" content="2. Output an Image为什么使用 255.999 而不是 255？这是一个非常经典的计算机图形学技巧，主要目的是为了处理浮点数精度问题并确保颜色范围的正确映射。  目标： 代码的目的是将一个范围在 [0.0, 1.0] 之间的浮点数（如变量 r, g, b）映射到范围在 [0, 255] 之间的整数，用于表示PPM图像格式中的颜色分量。  问题： 计算机在表示浮点数时存在精度限制。一">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-08-01T08:13:00.000Z">
+<meta property="article:modified_time" content="2025-09-02T06:52:46.358Z">
+<meta property="article:author" content="AKIRA">
+<meta property="article:tag" content="c++">
+<meta property="article:tag" content="面向对象">
+<meta property="article:tag" content="cg">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Ray tracing in one weekend笔记(1~6) - AKIRA&#39;s blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/lxgw-wenkai-screen-webfont/1.7.0/style.min.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"username.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>AKIRA&#39;s blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/banner.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Ray tracing in one weekend笔记(1~6)"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-08-01 16:13" pubdate>
+          2025年8月1日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          42 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Ray tracing in one weekend笔记(1~6)</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="2-Output-an-Image"><a href="#2-Output-an-Image" class="headerlink" title="2. Output an Image"></a>2. Output an Image</h2><h3 id="为什么使用-255-999-而不是-255？"><a href="#为什么使用-255-999-而不是-255？" class="headerlink" title="为什么使用 255.999 而不是 255？"></a>为什么使用 <code>255.999</code> 而不是 <code>255</code>？</h3><p>这是一个非常经典的计算机图形学技巧，主要目的是<strong>为了处理浮点数精度问题并确保颜色范围的正确映射</strong>。</p>
+<ul>
+<li><p><strong>目标：</strong> 代码的目的是将一个范围在 <code>[0.0, 1.0]</code> 之间的浮点数（如变量 <code>r</code>, <code>g</code>, <code>b</code>）映射到范围在 <code>[0, 255]</code> 之间的整数，用于表示PPM图像格式中的颜色分量。</p>
+</li>
+<li><p><strong>问题：</strong> 计算机在表示浮点数时存在精度限制。一个本应是 <code>1.0</code> 的值，在计算过程中可能会变成一个极其接近1的数，比如 <code>0.9999999999999999</code>。</p>
+</li>
+<li><p><strong>如果用 <code>255</code>：</strong></p>
+<ul>
+<li><p>当 <code>r</code> 的值是 <code>1.0</code> 时，<code>255 * 1.0</code> 等于 <code>255.0</code>，强制类型转换为 <code>int</code> 后得到 <code>255</code>，结果正确。</p>
+</li>
+<li><p>但是，如果 <code>r</code> 的值由于精度问题变成了 <code>0.99999999...</code>，<code>255 * 0.999999...</code> 的结果会是 <code>254.999999...</code>。C++在将浮点数转换为整数时会<strong>截断</strong>小数部分，所以 <code>(int)254.999999...</code> 的结果是 <code>254</code>。</p>
+</li>
+<li><p>这就导致了本应最亮的颜色（255）错误地变成了次亮的颜色（254），图像的色域会不完整。</p>
+</li>
+</ul>
+</li>
+<li><p><strong>使用 <code>255.999</code> 的解决方案：</strong></p>
+<ul>
+<li><p>通过乘以 <code>255.999</code>，我们为这种精度误差提供了一个“安全边界”。</p>
+</li>
+<li><p>当 <code>r</code> 是 <code>1.0</code> 时，<code>255.999 * 1.0</code> 结果是 <code>255.999</code>，转换为 <code>int</code> 是 <code>255</code>。</p>
+</li>
+<li><p>当 <code>r</code> 是 <code>0.99999999...</code> 时，<code>255.999 * 0.999999...</code> 的结果会非常接近 <code>255.999</code>（例如 <code>255.998...</code>），转换为 <code>int</code> 仍然是 <code>255</code>。</p>
+</li>
+</ul>
+</li>
+</ul>
+<p><strong>总结：使用 <code>255.999</code> 是一个健壮的编程技巧，可以确保 <code>[0.0, 1.0]</code> 的浮点数范围被完整且正确地映射到 <code>[0, 255]</code> 的整数范围，避免了因浮点数不精确而导致的最大值丢失问题。</strong></p>
+<hr>
+<h3 id="为什么-r-double-i-image-width-1-？"><a href="#为什么-r-double-i-image-width-1-？" class="headerlink" title="为什么 r = double(i) / (image_width - 1);？"></a>为什么 <code>r = double(i) / (image_width - 1);</code>？</h3><p>您的理解是完全正确的！这行代码的<strong>目的就是在图像上创建一个平滑的颜色渐变，让颜色的强度与像素的位置相关联</strong>。</p>
+<p>我们来分解一下这行代码：</p>
+<ul>
+<li><p><code>for (int i = 0; i &lt; image_width; i++)</code>: <code>i</code> 是像素的水平位置（列索引），从最左边的 <code>0</code> 变化到最右边的 <code>image_width - 1</code>。</p>
+</li>
+<li><p><code>double(i)</code>: 将整数索引 <code>i</code> 转换为浮点数，以便进行精确的除法运算。</p>
+</li>
+<li><p><code>image_width - 1</code>: 这是整个范围内的最大索引值。为什么要减1？因为像素索引是从0开始的。对于一个宽度为256的图像，它的像素索引范围是 <code>[0, 255]</code>，总共有256个像素。分母使用 <code>image_width - 1</code> (也就是255) 可以确保当 <code>i</code> 取到最大值 <code>255</code> 时，除法的结果正好是 <code>1.0</code>。如果分母是 <code>image_width</code> (256)，那么最大值只能是 <code>255/256</code>，永远达不到 <code>1.0</code>。</p>
+</li>
+<li><p><strong>归一化 (Normalization):</strong> 整个表达式 <code>double(i) / (image_width - 1)</code> 的作用是将像素的水平位置 <code>i</code>（范围 <code>[0, 255]</code>）“归一化”到一个标准的浮点数范围 <code>[0.0, 1.0]</code>。</p>
+</li>
+</ul>
+<p>同理，<code>auto g = double(j) / (image_height - 1);</code> 是将像素的垂直位置 <code>j</code> 归一化到 <code>[0.0, 1.0]</code>。</p>
+<p>最终的效果是：</p>
+<ul>
+<li><p>像素的<strong>红色分量 (<code>r</code>)</strong> 从左到右由 <code>0.0</code> 线性增加到 <code>1.0</code>。</p>
+</li>
+<li><p>像素的<strong>绿色分量 (<code>g</code>)</strong> 从上到下由 <code>0.0</code> 线性增加到 <code>1.0</code>。</p>
+</li>
+<li><p>像素的<strong>蓝色分量 (<code>b</code>)</strong> 始终为 <code>0.0</code>。</p>
+</li>
+</ul>
+<p>这将生成一张从左上角的黑色 (<code>r=0, g=0</code>) 渐变到右下角的黄色 (<code>r=1, g=1</code>)，右上角为红色 (<code>r=1, g=0</code>)，左下角为绿色 (<code>r=0, g=1</code>) 的图像。</p>
+<hr>
+<h2 id="3-vec-h"><a href="#3-vec-h" class="headerlink" title="3. vec.h"></a>3. vec.h</h2><h3 id="ifdef-define-与-pragma-once-的对比"><a href="#ifdef-define-与-pragma-once-的对比" class="headerlink" title="#ifdef &#x2F; #define 与 #pragma once 的对比"></a><strong><code>#ifdef</code> &#x2F; <code>#define</code> 与 <code>#pragma once</code> 的对比</strong></h3><p>预处理指令 <code>#ifndef VEC3_H</code>、<code>#define VEC3_H</code> 和 <code>#endif</code> 共同构成了一个“包含守卫”或“头文件守卫”。它们的作用是防止头文件的内容在单个编译单元中被多次包含。</p>
+<p>它们的工作原理如下：</p>
+<ol>
+<li><p><strong><code>#ifndef VEC3_H</code></strong>: 预处理器检查名为 <code>VEC3_H</code> 的宏是否已经被定义。</p>
+</li>
+<li><p><strong>首次包含</strong>: 第一次包含 <code>vec3.h</code> 时，<code>VEC3_H</code> 尚未被定义。因此，代码会继续执行下一行。</p>
+</li>
+<li><p><strong><code>#define VEC3_H</code></strong>: 这行代码定义了宏 <code>VEC3_H</code>。</p>
+</li>
+<li><p><strong><code>#endif</code></strong>: 文件的其余部分被包含进来，直到文件末尾的 <code>#endif</code>。</p>
+</li>
+<li><p><strong>后续包含</strong>: 如果同一个文件被再次包含，<code>#ifndef VEC3_H</code> 的检查将会失败，因为 <code>VEC3_H</code> 此时已经被定义。预处理器将跳过从此处到最终 <code>#endif</code> 之间的所有内容。</p>
+</li>
+</ol>
+<p><code>#pragma once</code> 是一个更现代的指令，它虽然非标准，但得到了广泛支持，并能实现相同的目标。当预处理器看到 <code>#pragma once</code> 时，它会记录下该文件的路径，并确保在同一次编译中不再包含它。</p>
+<p><strong>它们是等效的吗？</strong></p>
+<p>是的，它们的_效果_基本相同：防止头文件的多次包含。但是，它们之间存在一些关键区别：</p>
+<ul>
+<li><p><strong>标准化</strong>: <code>#define</code> 守卫方法是 C++ 标准的一部分，保证适用于任何合规的编译器。而 <code>#pragma once</code> 不是标准的一部分，但几乎所有现代编译器（如 GCC、Clang 和 MSVC）都支持它。</p>
+</li>
+<li><p><strong>简洁性</strong>: <code>#pragma once</code> 更简单，且不易出错。你只需要输入一行。而使用包含守卫，你必须小心确保宏名称是唯一的，并且不要忘记写 <code>#endif</code>。</p>
+</li>
+<li><p><strong>潜在错误</strong>: 使用 <code>#define</code> 守卫时，如果你不小心在两个不同的文件中使用了相同的宏名称，那么只有一个文件会被包含。这可能会导致非常令人困惑的 bug。</p>
+</li>
+</ul>
+<p>在现代 C++ 中，使用 <code>#pragma once</code> 很常见，但您的示例中使用的 <code>#define</code> 守卫方法是经典的、完全可移植的方式。</p>
+<h3 id="VEC3-H-的含义和惯例"><a href="#VEC3-H-的含义和惯例" class="headerlink" title="VEC3_H 的含义和惯例"></a><strong><code>VEC3_H</code> 的含义和惯例</strong></h3><ul>
+<li><p>VEC3_H 是什么意思？</p>
+<p>  在这里，VEC3_H 仅仅是一个唯一的标识符或宏，预处理器用它来跟踪这个特定文件是否已经被包含。它本身对 C++ 编译器没有任何内在含义。</p>
+</li>
+<li><p>它必须是 VEC3_H 吗？必须大写吗？</p>
+<p>  不，宏的名称并不严格要求与文件名匹配。你本可以使用 SOME_UNIQUE_NAME_HERE 这样的名字。然而，一个被广泛遵循的强大惯例是根据文件名来命名守卫宏，以确保其唯一性。</p>
+<p>  这个惯例通常是：</p>
+<ol>
+<li><p>取文件名 (<code>vec3.h</code>)。</p>
+</li>
+<li><p>将其转换为大写 (<code>VEC3.H</code>)。</p>
+</li>
+<li><p>将宏名称中无效的字符（如’.’）替换为下划线 (<code>_</code>)。这样就得到了 <code>VEC3_H</code>。</p>
+</li>
+</ol>
+<p>  在 C 和 C++ 中，使用大写字母来命名宏也是一个非常普遍的惯例，目的是将它们与变量和函数名区分开来，这有助于避免命名冲突。</p>
+</li>
+</ul>
+<p>总结一下：</p>
+<ul>
+<li><p>包含守卫 <code>#ifndef VEC3_H</code>, <code>#define VEC3_H</code>, <code>#endif</code> 和 <code>#pragma once</code> 的作用相同。<code>#define</code> 方法是标准且可移植的，而 <code>#pragma once</code> 是一个常见且更简洁的非标准扩展。</p>
+</li>
+<li><p><code>VEC3_H</code> 是一个用作标志的唯一预处理器变量。</p>
+</li>
+<li><p>通常遵循一个非常强的惯例：根据文件名来命名守卫宏，并全部使用大写字母，以防止命名冲突。</p>
+</li>
+</ul>
+<hr>
+<h3 id="组织方法"><a href="#组织方法" class="headerlink" title="组织方法"></a>组织方法</h3><ul>
+<li>在[[从实现一个Vector3f向量类，深入了解运算符重载]] 中也实现了一个三维向量类；但是在文件的组织上选择了不同的方案；<br>首先，我们总结一下两种做法的核心区别：</li>
+</ul>
+<ol>
+<li><p><strong>Vector3f (Separate Files)</strong>:</p>
+<ul>
+<li><p><strong>声明</strong>放在头文件 (<code>.h</code>) 中。</p>
+</li>
+<li><p><strong>定义（实现）</strong>放在源文件 (<code>.cpp</code>) 中。</p>
+</li>
+<li><p>通过链接器（Linker）将不同编译单元（<code>.cpp</code> 文件）中的函数调用链接到最终的函数定义。</p>
+</li>
+</ul>
+</li>
+<li><p><strong><code>vec3.h</code> 的做法 (Header-Only)</strong>:</p>
+<ul>
+<li><p><strong>声明和定义</strong>都放在头文件 (<code>.h</code>) 中。</p>
+</li>
+<li><p>使用 <code>inline</code> 关键字（或在类定义内部实现函数，这会使其隐式内联）来告诉编译器，这个函数的定义可能会在多个编译单元中出现，并且建议在调用处直接展开代码，而不是进行传统的函数调用。</p>
+</li>
+</ul>
+</li>
+</ol>
+<h3 id="vec3-h-做法的好处-Header-Only-Inline"><a href="#vec3-h-做法的好处-Header-Only-Inline" class="headerlink" title="vec3.h 做法的好处 (Header-Only &#x2F; Inline)"></a><strong><code>vec3.h</code> 做法的好处 (Header-Only &#x2F; Inline)</strong></h3><h4 id="1-性能优化：消除函数调用开销"><a href="#1-性能优化：消除函数调用开销" class="headerlink" title="1. 性能优化：消除函数调用开销"></a>1. 性能优化：消除函数调用开销</h4><p>这是 <code>vec3.h</code> 采用这种风格最主要的原因。</p>
+<ul>
+<li><p><strong>函数调用开销</strong>: 每次调用一个普通函数，CPU都需要保存当前执行位置、传递参数、跳转到函数地址、执行函数、然后返回。对于像向量的加法、点乘这样简单且频繁调用的操作，这些开销累加起来会影响性能。</p>
+</li>
+<li><p><strong>内联 (Inlining)</strong>: <code>inline</code> 关键字建议编译器将函数体直接嵌入到调用它的地方。这样就没有了函数调用的开销。对于 <code>vec3 u, v, w; w = u + v;</code> 这样的代码，内联后可能就直接被编译成几条高效的汇编指令，如同你直接写 <code>w.x = u.x + v.x; ...</code> 一样。在图形学和光线追踪这类计算密集型应用中，这种优化至关重要。</p>
+</li>
+</ul>
+<h4 id="2-避免链接错误-Linker-Errors"><a href="#2-避免链接错误-Linker-Errors" class="headerlink" title="2. 避免链接错误 (Linker Errors)"></a>2. 避免链接错误 (Linker Errors)</h4><ul>
+<li><p>如果你尝试把一个普通函数（非 <code>inline</code>）的完整定义放在头文件中，而这个头文件又被多个 <code>.cpp</code> 文件包含，链接器在链接时会发现这个函数有多个定义，从而报错（”multiple definition” error）。</p>
+</li>
+<li><p><code>inline</code> 关键字的一个重要作用就是解决这个问题。它告诉链接器：“这个函数在多个地方都有定义是正常的，你只需要其中一个就行了。” 这使得将函数实现放在头文件中成为可能。</p>
+</li>
+<li><p>不过，如果是像<code>Vector3f</code>那样组织，头文件只有函数的声明，哈数具体实现被单独分到一个文件。就不会出现这样的问题。</p>
+</li>
+</ul>
+<h4 id="3-易于分发和使用"><a href="#3-易于分发和使用" class="headerlink" title="3. 易于分发和使用"></a>3. 易于分发和使用</h4><p>像 <code>vec3.h</code> 这样的库被称为“仅头文件库 (Header-only library)”。开发者只需要 <code>#include</code> 这一个文件就可以使用整个库，不需要复杂的项目配置来链接额外的 <code>.cpp</code> 文件或库文件 (<code>.lib</code>, <code>.a</code>)。这对于小型的、通用的工具类（如数学库）来说非常方便。</p>
+<h3 id="Vector3f做法的好处-Separate-Files"><a href="#Vector3f做法的好处-Separate-Files" class="headerlink" title="Vector3f做法的好处 (Separate Files)"></a><strong>Vector3f做法的好处 (Separate Files)</strong></h3><p>这是C++项目管理中的标准实践，尤其适用于大型项目。它同样有很多优点。</p>
+<h4 id="1-编译速度更快"><a href="#1-编译速度更快" class="headerlink" title="1. 编译速度更快"></a>1. 编译速度更快</h4><ul>
+<li><p>当实现放在 <code>.cpp</code> 文件中时，如果只修改了 <code>.cpp</code> 文件的内容（比如函数的一个实现细节），那么只有这个 <code>.cpp</code> 文件需要重新编译。其他包含了对应头文件的文件则不需要。</p>
+</li>
+<li><p>反观 Header-only 的做法，任何对头文件中函数实现的修改，都会导致所有包含了这个头文件的 <code>.cpp</code> 文件被重新编译，这在大型项目中会极大地拖慢编译速度。</p>
+</li>
+</ul>
+<h4 id="2-更好的代码组织和封装"><a href="#2-更好的代码组织和封装" class="headerlink" title="2. 更好的代码组织和封装"></a>2. 更好的代码组织和封装</h4><ul>
+<li><p><strong>关注点分离</strong>: 将接口（API）的声明放在头文件中，将实现细节放在源文件中，是一种非常清晰的组织方式。当其他人想使用你的类时，他们只需要看头文件，而不需要关心具体的实现。</p>
+</li>
+<li><p><strong>隐藏实现</strong>: 你不希望类的使用者知道或依赖于你的内部实现。这种分离有助于实现信息隐藏（Information Hiding）。</p>
+</li>
+</ul>
+<h3 id="关于运算符重载和友元函数"><a href="#关于运算符重载和友元函数" class="headerlink" title="关于运算符重载和友元函数"></a><strong>关于运算符重载和友元函数</strong></h3><p>你提到了“运算符重载和友元函数”。我们来对比一下：</p>
+<ul>
+<li><p><strong>Vector3f实现</strong>: 在 <code>Vector3f</code> 中，像 <code>operator+</code> 这样的二元运算符被实现为<strong>成员函数</strong>。</p>
+</li>
+<li><p><strong><code>vec3.h</code> 的实现</strong>: <code>operator+</code> 被实现为一个<strong>非成员的内联函数</strong> <code>inline vec3 operator+(const vec3 &amp;u, const vec3 &amp;v)</code>。</p>
+</li>
+</ul>
+<p>将二元运算符（如 <code>+</code>, <code>*</code> 等）实现为<strong>非成员函数（通常是 <code>inline</code>，有时是 <code>friend</code>）</strong>是更常见且更灵活的做法。主要原因在于它支持更对称的类型转换。</p>
+<p>例如，在 vec3.h 中，你可以写 2.0 * v，编译器会自动调用 operator*(double t, const vec3 &amp;v)。</p>
+<p>但在你的实现中，你重载的是 Vector3f Vector3f::operator*(float n)，这意味着只有 v * 2.0f 是合法的，而 2.0f * v 会编译失败，所以在<code>Vector3f</code>中不得不提供一个非成员的 operator*（通常可以是友元 friend 函数，如果需要访问私有成员的话）去实现2.0f * v这样的情况。</p>
+<h3 id="总结：为什么要这样做？"><a href="#总结：为什么要这样做？" class="headerlink" title="总结：为什么要这样做？"></a><strong>总结：为什么要这样做？</strong></h3><p>原作者选择 <strong>Header-only 和 <code>inline</code></strong> 的方式，主要是出于以下考虑：</p>
+<ol>
+<li><p><strong>性能 (Performance)</strong>: 对于一个基础数学向量类，性能是第一位的。内联可以显著减少函数调用开销，对计算密集型程序（如光线追踪）非常关键。</p>
+</li>
+<li><p><strong>便利性 (Convenience)</strong>: 作为一个小而美的工具类，做成仅头文件的形式让它更容易被集成到任何项目中。</p>
+</li>
+</ol>
+<p>而Vector3f的做法（分离 <code>.h</code> 和 <code>.cpp</code>）在以下方面更有优势：</p>
+<ol>
+<li><p><strong>可维护性 (Maintainability)</strong>: 在大型项目中，清晰的接口与实现分离、更快的增量编译速度，使得项目更容易管理。</p>
+</li>
+<li><p><strong>封装 (Encapsulation)</strong>: 更好地隐藏实现细节。</p>
+</li>
+</ol>
+<p>总而言之，两种方法没有绝对的对错，而是服务于不同目标的**设计选择 (Design Trade-off)**。对于像 <code>vec3</code> 这样小、稳定、性能要求高的基础工具类，Header-only 的 <code>inline</code> 实现是业界的常见选择。对于更复杂的、业务逻辑相关的类，分离文件是更稳妥、更具扩展性的方案。</p>
+<hr>
+<h3 id="内联与友元"><a href="#内联与友元" class="headerlink" title="内联与友元"></a>内联与友元</h3><ul>
+<li>我们来深入探讨一下<code>内联函数 (inline function)</code>，并把它和<code>友元函数 (friend function)</code>进行清晰的区分。</li>
+<li>其实这两个是截然不同的概念，互相并不矛盾，也可以结合使用。放在一起纯粹是因为两种不同的运算符重载方案分别使用了内联函数方案和友元函数方案，且考虑的出发点也不同。</li>
+</ul>
+<h3 id="内联函数"><a href="#内联函数" class="headerlink" title="内联函数"></a>内联函数</h3><ul>
+<li><code>inline</code> 关键字的核心目标是<strong>向编译器提出一个性能优化的建议</strong>。</li>
+</ul>
+<h4 id="主要目的：消除函数调用开销"><a href="#主要目的：消除函数调用开销" class="headerlink" title="主要目的：消除函数调用开销"></a>主要目的：消除函数调用开销</h4><ul>
+<li>当你调用一个普通函数时，程序会执行一系列的“幕后”操作：</li>
+</ul>
+<ol>
+<li><p>将当前指令的地址入栈（以便知道函数执行完后返回哪里）。</p>
+</li>
+<li><p>将函数参数复制到栈上。</p>
+</li>
+<li><p>跳转到函数的内存地址。</p>
+</li>
+<li><p>执行函数体。</p>
+</li>
+<li><p>将返回值（如果有）放到指定位置。</p>
+</li>
+<li><p>从栈中恢复指令地址，跳回原来的地方继续执行。</p>
+</li>
+</ol>
+<ul>
+<li>这个过程被称为“函数调用开销 (function call overhead)”。对于大多数函数来说，这点开销微不足道。但如果一个函数非常小（比如只有一两行代码）且被极其频繁地调用（例如，在一个百万次循环中），这个开销就会累积起来，影响程序的整体性能。</li>
+<li><code>inline</code> 就是为了解决这个问题。当你将一个函数声明为 <code>inline</code> 时，你其实是在建议编译器：<strong>“请不要生成函数调用指令，而是直接把这个函数的代码‘复制粘贴’到调用它的地方吧。”</strong></li>
+<li>这个过程被称为**内联展开 (inlining)**。</li>
+</ul>
+<p><strong>代码示例:</strong></p>
+<p>C++</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs csharp"><span class="hljs-comment">// 声明一个内联函数</span><br><span class="hljs-function">inline <span class="hljs-built_in">int</span> <span class="hljs-title">add</span>(<span class="hljs-params"><span class="hljs-built_in">int</span> a, <span class="hljs-built_in">int</span> b</span>)</span> &#123;<br>    <span class="hljs-keyword">return</span> a + b;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">some_function</span>()</span> &#123;<br>    <span class="hljs-built_in">int</span> x = <span class="hljs-number">5</span>, y = <span class="hljs-number">10</span>;<br>    <span class="hljs-comment">// ...</span><br>    <span class="hljs-built_in">int</span> result = <span class="hljs-keyword">add</span>(x, y); <span class="hljs-comment">// 编译器可能会把这里替换成 int result = x + y;</span><br>    <span class="hljs-comment">// ...</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>内联展开后，<code>some_function</code> 在编译期间看起来就像这样，完全没有了 <code>add</code> 函数的调用过程：</p>
+<p>C++</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs csharp"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">some_function</span>()</span> &#123;<br>    <span class="hljs-built_in">int</span> x = <span class="hljs-number">5</span>, y = <span class="hljs-number">10</span>;<br>    <span class="hljs-comment">// ...</span><br>    <span class="hljs-built_in">int</span> result = x + y; <span class="hljs-comment">// 直接嵌入，没有函数调用开销</span><br>    <span class="hljs-comment">// ...</span><br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h4 id="inline-的两个关键点"><a href="#inline-的两个关键点" class="headerlink" title="inline 的两个关键点"></a><code>inline</code> 的两个关键点</h4><ol>
+<li><p><strong>它仅仅是个建议</strong>：<code>inline</code> 关键字不是强制命令。编译器会自行判断是否进行内联。如果一个函数太长、包含循环或递归，编译器通常会忽略 <code>inline</code> 建议，依然将其作为普通函数来调用。</p>
+</li>
+<li><p>解决头文件中的“多重定义”问题：这是 inline 一个非常重要的、实际的用途。如果你把一个函数的完整定义放在头文件(.h)中，而这个头文件被多个源文件(.cpp)包含，链接器(linker)在最后链接时会发现这个函数有多个定义，从而导致<strong>“多重定义 (multiple definition)”</strong>的链接错误。</p>
+<p> inline 关键字可以解决这个问题。它告诉链接器：“这个函数在多个地方都有定义是合法的，它们都是同一个函数，你只需要保留一个副本就行了。” 这也是为什么像 vec3.h 这样的仅头文件库(Header-only library)能成功的原因。</p>
+</li>
+</ol>
+<hr>
+<h3 id="2-详细介绍友元函数-friend"><a href="#2-详细介绍友元函数-friend" class="headerlink" title="2. 详细介绍友元函数 (friend)"></a><strong>2. 详细介绍友元函数 (<code>friend</code>)</strong></h3><p><code>friend</code> 关键字的核心目标是<strong>打破类的封装性，提供一种受控的外部访问机制</strong>。</p>
+<h4 id="主要目的：访问类的私有成员"><a href="#主要目的：访问类的私有成员" class="headerlink" title="主要目的：访问类的私有成员"></a>主要目的：访问类的私有成员</h4><ul>
+<li>C++ 的核心思想之一是**封装 (Encapsulation)**，即把数据（成员变量）和操作数据的方法（成员函数）捆绑在一起，并对外部隐藏数据的实现细节。通过 <code>public</code>, <code>protected</code>, <code>private</code> 关键字，我们可以控制谁能访问类的成员。</li>
+<li><code>private</code> 成员通常只能被这个类自己的成员函数访问。但是，在某些特殊情况下，一个<strong>非成员函数</strong>或者<strong>另一个类</strong>需要直接访问这个类的私有成员。这时，就可以在类定义内部使用 <code>friend</code> 关键字，“授权”那个函数或类成为自己的“朋友”。</li>
+<li><strong>一个“朋友”可以访问该类的 <code>private</code> 和 <code>protected</code> 成员，就像它是这个类的成员函数一样。</strong>。<br><strong>代码示例:</strong></li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Vector</span> &#123;<br><span class="hljs-keyword">private</span>:<br>    <span class="hljs-type">double</span> x, y, z;<br><br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-built_in">Vector</span>(<span class="hljs-type">double</span> x, <span class="hljs-type">double</span> y, <span class="hljs-type">double</span> z) : <span class="hljs-built_in">x</span>(x), <span class="hljs-built_in">y</span>(y), <span class="hljs-built_in">z</span>(z) &#123;&#125;<br><br>    <span class="hljs-comment">// 声明 operator&lt;&lt; 为友元函数</span><br>    <span class="hljs-comment">// 它不是成员函数，但可以访问 Vector 的 private 成员</span><br>    <span class="hljs-keyword">friend</span> std::ostream&amp; <span class="hljs-keyword">operator</span>&lt;&lt;(std::ostream&amp; out, <span class="hljs-type">const</span> Vector&amp; v);<br>&#125;;<br><br><span class="hljs-comment">// 友元函数的定义（在类外部）</span><br>std::ostream&amp; <span class="hljs-keyword">operator</span>&lt;&lt;(std::ostream&amp; out, <span class="hljs-type">const</span> Vector&amp; v) &#123;<br>    <span class="hljs-comment">// 因为是 friend，所以这里可以直接访问 v.x, v.y, v.z</span><br>    out &lt;&lt; <span class="hljs-string">&quot;(&quot;</span> &lt;&lt; v.x &lt;&lt; <span class="hljs-string">&quot;, &quot;</span> &lt;&lt; v.y &lt;&lt; <span class="hljs-string">&quot;, &quot;</span> &lt;&lt; v.z &lt;&lt; <span class="hljs-string">&quot;)&quot;</span>;<br>    <span class="hljs-keyword">return</span> out;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span> </span>&#123;<br>    <span class="hljs-function">Vector <span class="hljs-title">my_vec</span><span class="hljs-params">(<span class="hljs-number">1.0</span>, <span class="hljs-number">2.0</span>, <span class="hljs-number">3.0</span>)</span></span>;<br>    std::cout &lt;&lt; <span class="hljs-string">&quot;My vector is: &quot;</span> &lt;&lt; my_vec &lt;&lt; std::endl; <span class="hljs-comment">// 可以正常工作</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>如果没有 <code>friend</code> 声明，<code>operator&lt;&lt;</code> 函数就无法访问 <code>my_vec</code> 的私有成员 <code>x</code>, <code>y</code>, <code>z</code>，代码将无法编译。</li>
+</ul>
+<hr>
+<h3 id="3-inline-和-friend-的核心区别"><a href="#3-inline-和-friend-的核心区别" class="headerlink" title="3. inline 和 friend 的核心区别"></a><strong>3. <code>inline</code> 和 <code>friend</code> 的核心区别</strong></h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>内联函数 (<code>inline</code>)</th>
+<th>友元函数 (<code>friend</code>)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>主要目的</strong></td>
+<td><strong>性能优化</strong></td>
+<td><strong>访问控制</strong></td>
+</tr>
+<tr>
+<td><strong>解决的问题</strong></td>
+<td>减少函数调用开销；避免头文件中的多重定义链接错误。</td>
+<td>允许非成员函数或另一个类访问本类的 <code>private</code>&#x2F;<code>protected</code> 成员。</td>
+</tr>
+<tr>
+<td><strong>作用对象</strong></td>
+<td>函数的<strong>实现方式</strong>。</td>
+<td>函数或类的<strong>访问权限</strong>。</td>
+</tr>
+<tr>
+<td><strong>本质</strong></td>
+<td>对编译器的<strong>建议</strong>，影响代码如何生成。</td>
+<td>对编译器的<strong>规则</strong>，打破封装，授予访问权。</td>
+</tr>
+<tr>
+<td><strong>关键字位置</strong></td>
+<td>在函数<strong>定义或声明</strong>时使用。</td>
+<td>在<strong>类定义内部</strong>，用于声明谁是“朋友”。</td>
+</tr>
+</tbody></table>
+<p><strong>总结一句话：<code>inline</code> 关心代码“如何”执行，<code>friend</code> 关心“谁能”访问数据。</strong> 它们是两个完全正交（不相关）的概念。</p>
+<h3 id="4-结合使用-inline-和-friend"><a href="#4-结合使用-inline-和-friend" class="headerlink" title="4. 结合使用 inline 和 friend"></a><strong>4. 结合使用 <code>inline</code> 和 <code>friend</code></strong></h3><ul>
+<li><p>回到上面的 <code>Vector</code> 和 <code>operator&lt;&lt;</code> 的例子。如果我们想把 <code>operator&lt;&lt;</code> 的实现也放在头文件中（为了方便），我们就必须把它标记为 <code>inline</code> 以防止多重定义错误。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// 在头文件 Vector.h 中</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Vector</span> &#123;<br>    <span class="hljs-comment">// ... private members ...</span><br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-comment">// ... public members ...</span><br>    <br>    <span class="hljs-comment">// 声明 operator&lt;&lt; 为友元</span><br>    <span class="hljs-keyword">friend</span> std::ostream&amp; <span class="hljs-keyword">operator</span>&lt;&lt;(std::ostream&amp; out, <span class="hljs-type">const</span> Vector&amp; v);<br>&#125;;<br><br><span class="hljs-comment">// 将友元函数的定义也放在头文件中，必须标记为 inline</span><br><span class="hljs-keyword">inline</span> std::ostream&amp; <span class="hljs-keyword">operator</span>&lt;&lt;(std::ostream&amp; out, <span class="hljs-type">const</span> Vector&amp; v) &#123;<br>    out &lt;&lt; <span class="hljs-string">&quot;(&quot;</span> &lt;&lt; v.x &lt;&lt; <span class="hljs-string">&quot;, &quot;</span> &lt;&lt; v.y &lt;&lt; <span class="hljs-string">&quot;, &quot;</span> &lt;&lt; v.z &lt;&lt; <span class="hljs-string">&quot;)&quot;</span>;<br>    <span class="hljs-keyword">return</span> out;<br>&#125;<br></code></pre></td></tr></table></figure>
+</li>
+<li><p>在这里：</p>
+<ul>
+<li><code>friend</code> 授予了 <code>operator&lt;&lt;</code> 访问 <code>Vector</code> 私有成员的<strong>权限</strong>。</li>
+<li><code>inline</code> 解决了将这个函数定义放在头文件里可能导致的<strong>链接错误</strong>，并可能带来性能提升。</li>
+</ul>
+</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/cs/" class="category-chain-item">cs</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/c/" class="print-no-link">#c++</a>
+      
+        <a href="/tags/%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1/" class="print-no-link">#面向对象</a>
+      
+        <a href="/tags/cg/" class="print-no-link">#cg</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Ray tracing in one weekend笔记(1~6)</div>
+      <div>https://username.github.io/2025/08/01/Ray tracing in one weekend笔记（1~6）/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>AKIRA</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年8月1日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/07/22/%E4%BB%8E%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AAVector3f%E5%90%91%E9%87%8F%E7%B1%BB%EF%BC%8C%E6%B7%B1%E5%85%A5%E4%BA%86%E8%A7%A3%E8%BF%90%E7%AE%97%E7%AC%A6%E9%87%8D%E8%BD%BD/" title="从实现一个Vector3f向量类，深入了解运算符重载">
+                        <span class="hidden-mobile">从实现一个Vector3f向量类，深入了解运算符重载</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
