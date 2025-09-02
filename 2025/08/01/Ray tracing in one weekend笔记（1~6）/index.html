@@ -27,7 +27,7 @@
 <meta property="og:description" content="2. Output an Image为什么使用 255.999 而不是 255？这是一个非常经典的计算机图形学技巧，主要目的是为了处理浮点数精度问题并确保颜色范围的正确映射。  目标： 代码的目的是将一个范围在 [0.0, 1.0] 之间的浮点数（如变量 r, g, b）映射到范围在 [0, 255] 之间的整数，用于表示PPM图像格式中的颜色分量。  问题： 计算机在表示浮点数时存在精度限制。一">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-08-01T08:13:00.000Z">
-<meta property="article:modified_time" content="2025-09-02T07:20:48.771Z">
+<meta property="article:modified_time" content="2025-09-02T07:22:37.569Z">
 <meta property="article:author" content="AKIRA">
 <meta property="article:tag" content="c++">
 <meta property="article:tag" content="面向对象">
@@ -527,7 +527,7 @@
 <li>如果没有 <code>friend</code> 声明，<code>operator&lt;&lt;</code> 函数就无法访问 <code>my_vec</code> 的私有成员 <code>x</code>, <code>y</code>, <code>z</code>，代码将无法编译。</li>
 </ul>
 <hr>
-<h3 id="inline-和-friend-的核心区别"><a href="#inline-和-friend-的核心区别" class="headerlink" title="** inline 和 friend 的核心区别**"></a>** <code>inline</code> 和 <code>friend</code> 的核心区别**</h3><table>
+<h3 id="inline-和-friend-的核心区别"><a href="#inline-和-friend-的核心区别" class="headerlink" title="inline 和 friend 的核心区别"></a><strong><code>inline</code> 和 <code>friend</code> 的核心区别</strong></h3><table>
 <thead>
 <tr>
 <th>特性</th>
@@ -561,7 +561,7 @@
 <td>在<strong>类定义内部</strong>，用于声明谁是“朋友”。</td>
 </tr>
 </tbody></table>
-<p><strong>总结一句话：<code>inline</code> 关心代码“如何”执行，<code>friend</code> 关心“谁能”访问数据。</strong> 它们是两个完全正交（不相关）的概念。</p>
+<p><strong>总结一句话：<code>inline</code> 关心代码“如何”执行，<code>friend</code> 关心“谁能”访问数据</strong> 它们是两个完全正交（不相关）的概念。</p>
 <h3 id="结合使用-inline-和-friend"><a href="#结合使用-inline-和-friend" class="headerlink" title="结合使用 inline 和 friend"></a><strong>结合使用 <code>inline</code> 和 <code>friend</code></strong></h3><ul>
 <li><p>回到上面的 <code>Vector</code> 和 <code>operator&lt;&lt;</code> 的例子。如果我们想把 <code>operator&lt;&lt;</code> 的实现也放在头文件中（为了方便），我们就必须把它标记为 <code>inline</code> 以防止多重定义错误。</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-comment">// 在头文件 Vector.h 中</span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Vector</span> &#123;<br>    <span class="hljs-comment">// ... private members ...</span><br><span class="hljs-keyword">public</span>:<br>    <span class="hljs-comment">// ... public members ...</span><br>    <br>    <span class="hljs-comment">// 声明 operator&lt;&lt; 为友元</span><br>    <span class="hljs-keyword">friend</span> std::ostream&amp; <span class="hljs-keyword">operator</span>&lt;&lt;(std::ostream&amp; out, <span class="hljs-type">const</span> Vector&amp; v);<br>&#125;;<br><br><span class="hljs-comment">// 将友元函数的定义也放在头文件中，必须标记为 inline</span><br><span class="hljs-keyword">inline</span> std::ostream&amp; <span class="hljs-keyword">operator</span>&lt;&lt;(std::ostream&amp; out, <span class="hljs-type">const</span> Vector&amp; v) &#123;<br>    out &lt;&lt; <span class="hljs-string">&quot;(&quot;</span> &lt;&lt; v.x &lt;&lt; <span class="hljs-string">&quot;, &quot;</span> &lt;&lt; v.y &lt;&lt; <span class="hljs-string">&quot;, &quot;</span> &lt;&lt; v.z &lt;&lt; <span class="hljs-string">&quot;)&quot;</span>;<br>    <span class="hljs-keyword">return</span> out;<br>&#125;<br></code></pre></td></tr></table></figure>
